@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head lang='en'>
+	<meta charset='utf-8'>
+	<meta name='viewport' content='width=device-width'>
+	<title>online-video-editor</title>
+
+	<style>
+		body {
+			font-family: 'Helvetica Neue', Arial, sans-serif;
+			color: #333;
+			font-weight: 300;
+		}
+		#canvas{
+			width: 320px;
+			height: 180px;
+		}
+	</style>
+</head>
+<body>
+	<h1>online-video-editor</h1>
+	<!-- webcam -->
+	<div>
+		<button id="open">打开摄像头</button>
+		<button id="close">关闭摄像头</button>
+	</div>
+	<div>
+		滤镜：
+		<button id="origin">原始</button>
+		<button id="gray">灰度</button>
+	</div>
+	<div>
+		<canvas id="canvas"></canvas>
+		<p>fps: <span id="frameNum">0</span></p>
+	</div>
+	<script src='bundle.js'></script>
+</body>
+</html>
