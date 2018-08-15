@@ -14,28 +14,31 @@ export default function loadWASM() {
       .then(buffer => {
         Module.wasmBinary = buffer;
         // GLOBAL -- create custom event for complete glue script execution
+        // Emscripten编译的函数如_grayScale，_malloc等会挂到全局环境下
         var script = document.createElement('script');
         script.onload = buildWam;
         // END GLOBAL
-
-        // TODO: IN EMSCRIPTEN GLUE INSERT
-        // else{doRun()} ...
-        // script.dispatchEvent(doneEvent);
-        // ... }Module["run"]
-
         script.src = './webdsp_c.js';
         document.body.appendChild(script);
+
+        // 构建wam模块
         function buildWam() {
           console.log('Emscripten boilerplate loaded.');
           const wam = {};
 
           // filters
           wam['grayScale'] = function(pixelData) {
-            const len = pixelData.length
+            // 获取像素数组长度
+            const len = pixelData.length;
+            // 开辟一块内存，返回地址
             const mem = _malloc(len);
+            // 把像素数据放入这块内存mem
             HEAPU8.set(pixelData, mem);
+            // 处理像素，源数据
             _grayScale(mem, len);
+            // 从heap中拿出mem～mem+len（起始指针到位移len的数据）
             const filtered = HEAPU8.subarray(mem, mem + len);
+            // 释放内存
             _free(mem);
             return filtered;
           };

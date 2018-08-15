@@ -13,7 +13,7 @@
 		}
 		#canvas{
 			width: 320px;
-			height: 180px;
+			height: auto;
 		}
 	</style>
 </head>
@@ -26,8 +26,12 @@
 	</div>
 	<div>
 		滤镜：
-		<button id="origin">原始</button>
-		<button id="gray">灰度</button>
+		<button class="filter-button" filter="original">原始</button>
+		<button class="filter-button" filter="grayScale">灰度</button>
+		<button class="filter-button" filter="brighten">高亮</button>
+		<button class="filter-button" filter="invert">反色</button>
+		<button class="filter-button" filter="noise">噪点</button>
+		<button class="filter-button" filter="sobelFilter">边缘提取</button>		
 	</div>
 	<div>
 		<canvas id="canvas"></canvas>

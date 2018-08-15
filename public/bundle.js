@@ -14,28 +14,31 @@
         .then(response => response.arrayBuffer())
         .then(buffer => {
           // GLOBAL -- create custom event for complete glue script execution
+          // Emscripten编译的函数如_grayScale，_malloc等会挂到全局环境下
           var script = document.createElement('script');
           script.onload = buildWam;
           // END GLOBAL
-
-          // TODO: IN EMSCRIPTEN GLUE INSERT
-          // else{doRun()} ...
-          // script.dispatchEvent(doneEvent);
-          // ... }Module["run"]
-
           script.src = './webdsp_c.js';
           document.body.appendChild(script);
+
+          // 构建wam模块
           function buildWam() {
             console.log('Emscripten boilerplate loaded.');
             const wam = {};
 
             // filters
             wam['grayScale'] = function(pixelData) {
+              // 获取像素数组长度
               const len = pixelData.length;
+              // 开辟一块内存，返回地址
               const mem = _malloc(len);
+              // 把像素数据放入这块内存mem
               HEAPU8.set(pixelData, mem);
+              // 处理像素，源数据
               _grayScale(mem, len);
+              // 从heap中拿出mem～mem+len（起始指针到位移len的数据）
               const filtered = HEAPU8.subarray(mem, mem + len);
+              // 释放内存
               _free(mem);
               return filtered;
             };
@@ -173,7 +176,8 @@
   var wam,
     video,
     gStream,
-    frameNum;
+    requestId,
+    gFilter;
   var canvas = document.getElementById('canvas');
   var context = canvas.getContext('2d');
 
@@ -188,6 +192,7 @@
       video.addEventListener("loadeddata", function() {
         canvas.setAttribute('height', video.videoHeight);
         canvas.setAttribute('width', video.videoWidth);
+        gFilter = wam.original;
         draw();
       });
     }).catch(function(err) {
@@ -197,18 +202,27 @@
   }
   function stopWebcam() {
     gStream.getTracks().forEach(track => track.stop());
-    clearInterval(timer);
+    window.clearInterval(timer);
+    window.cancelAnimationFrame(requestId);
   }
 
   var lastCalledTime;
   var fps = 0;
   function draw() {
     if (video.paused) return false;
+
+    // 绘制video当前画面
     context.drawImage(video, 0, 0);
+    // 获取当前canvas图像像素
     var pixels = context.getImageData(0, 0, video.videoWidth, video.videoHeight);
-    pixels.data.set(wam.grayScale(pixels.data));
+    // 将pixels.data设置为滤镜之后像素值
+    pixels.data.set(gFilter(pixels.data, canvas.width, canvas.height));
+    // 将滤镜处理后pixels放回到canvas画布
     context.putImageData(pixels, 0, 0);
-    frameNum = requestAnimationFrame(draw);
+    // 继续绘制
+    requestId = requestAnimationFrame(draw);
+
+    // 计算fps
     if (!lastCalledTime) {
       lastCalledTime = performance.now();
       fps = 0;
@@ -219,19 +233,33 @@
     fps = 1 / delta;
   }
 
+  function setFilter(evt) {
+    let filter = wam[evt.target.getAttribute('filter')];
+    gFilter = filter || wam.grayScale;
+  }
+
   var frameNumDom = document.getElementById('frameNum');
   function showFPS() {
     frameNumDom.innerHTML = parseInt(fps);
   }
-  var timer = setInterval(showFPS, 1000);
 
   // 加载wasm
   loadWASM().then(module => {
     wam = module;
+    // 增加原始滤镜模块
+    wam.original = function(pixels) {
+      return pixels;
+    };
   });
   // 加载摄像头图像
   document.getElementById('open').addEventListener('click', openWebcam);
   document.getElementById('close').addEventListener('click', stopWebcam);
+
+  Array.from(document.getElementsByClassName('filter-button')).forEach(function(element) {
+    element.addEventListener('click', setFilter);
+  });
+
+  var timer = setInterval(showFPS, 1000);
 
 }());
 //# sourceMappingURL=bundle.js.map

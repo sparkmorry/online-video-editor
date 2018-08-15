@@ -1,29 +1,16 @@
-# rollup-starter-app
-
-This repo contains a bare-bones example of how to create an application using Rollup, including importing a module from `node_modules` and converting it from CommonJS.
-
-*See also https://github.com/rollup/rollup-starter-lib*
-
+# online-video-editor
+一个基于WebAssembly(wasm)的视频在线处理demo，使用Emscripten打包cpp文件成wasm文件提升视频处理效率，通过javascript加载并利用浏览器做一些输入输出操作（如canvas播放、webcam调用等）。前端使用rollup打包工具。
+在线地址：https://sparkmorry.github.io/online-video-editor/public/index.html
 
 ## Getting started
 
-Clone this repository and install its dependencies:
+`npm run build` 打包bundle
 
-```bash
-git clone https://github.com/rollup/rollup-starter-app
-cd rollup-starter-app
-npm install
-```
+`npm start` 服务器[localhost:3000](http://localhost:3000).
 
-The `public/index.html` file contains a `<script src='bundle.js'>` tag, which means we need to create `public/bundle.js`. The `rollup.config.js` file tells Rollup how to create this bundle, starting with `src/main.js` and including all its dependencies, including [date-fns](https://date-fns.org).
+`npm run watch` 实时更新调试bundle
 
-`npm run build` builds the application to `public/bundle.js`, along with a sourcemap file for debugging.
-
-`npm start` launches a server, using [serve](https://github.com/zeit/serve). Navigate to [localhost:3000](http://localhost:3000).
-
-`npm run watch` will continually rebuild the application as your source files change.
-
-`npm run dev` will run `npm start` and `npm run watch` in parallel.
+`npm run dev` `npm start` + `npm run watch`.
 
 ## License
 
