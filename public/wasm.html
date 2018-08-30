@@ -1,19 +1,30 @@
 <html>
   <body>
-    <p>视频转换mp4</p>
+    <h3>视频转换mp4</h3>
+    <p><a href="/input/36.wmv">示例非mp4文件（wmv文件）下载</a></p>
     <input type="file" id="file">
+    <p id="status"></p>
+    <div id="output"></div>
   </body>
-  <!-- <script src="ffmpeg.js"></script> -->
-  <!-- <script src="ffmpeg.wasm" ></script> -->
 
   <script>
     var worker = new Worker('worker.js')
     var fileToRead = document.getElementById("file");
+    var outputDom = document.getElementById("output");
+    var statusDom = document.getElementById("status");
+
+    function addText(msg){
+      var p = document.createElement('p');
+      var tm = new Date().toTimeString();
+      p.innerHTML = msg + tm;
+      statusDom.appendChild(p);
+    }
 
     fileToRead.addEventListener("change", function(event) {
       var files = fileToRead.files;
       var len = files.length;
       worker.postMessage(files)
+      addText('上传成功，开始转码……');
     }, false);
 
     function getDownloadLink(fileData, fileName) {
@@ -24,20 +35,22 @@
 
         img.src = src;
         return img;
-      }
-      else {
+      }else {
         var a = document.createElement('a');
         a.download = fileName;
         var blob = new Blob([fileData]);
         var src = window.URL.createObjectURL(blob);
         a.href = src;
-        a.textContent = 'Click here to download ' + fileName + "!";
+        a.textContent = '转码mp4成功！下载' + fileName + "!";
         return a;
       }
     }
     worker.onmessage = function(e, result){
-      debugger
-      document.body.appendChild(getDownloadLink(e.data, 'output.mp4'));
+      addText('转码成功！');
+      // var mp4File = document.createElement('video');
+      outputDom.appendChild(getDownloadLink(e.data, 'output.mp4'));
+      // mp4File.src = getDownloadLink(e.data, 'output.mp4').href;
+      // outputDom.appendChild(mp4File);
     }
   </script>
 </html>
